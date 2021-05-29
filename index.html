@@ -4,9 +4,30 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>购物车</title>
 </head>
 <body>
-    hello
+    <!-- 宿主文件 -->
+    <div id="app">
+        <h2 :title="title">
+            {{title}}
+        </h2>
+        
+    </div>
+    <script src="vue.js"></script>
+    <script>
+        //1.创建vue实例
+        const app = new Vue({
+            el:'#app',
+            data(){
+                return {
+                    title:'购物车'
+                }
+            }
+        })
+        setTimeout(() => {
+            app.title = "wang";
+        }, 1000);
+    </script>
 </body>
 </html>
