@@ -34,44 +34,19 @@
                 <div>{{ c }}</div>
             </div>
         </div>
-        <!-- 商品总数 -->
-        <p>
-            <!-- 表达式 -->
-            <!-- 课程总数：{{courses.length+'门'}} -->
-            <!-- 计算属性 -->
-            <!-- 课程总数：{{total}} -->
-            <!-- 监听器 -->
-            课程总数：{{totalCount}} 
-        </p>
     </div>
     <script src="vue.js"></script>
     <script>
-        //模拟异步数据的调用
-        function getCourses(){
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    resolve(['web','web开发'])
-                }, 200);
-            })
-        }
         //1.创建vue实例
         const app = new Vue({
             el:'#app',
             data(){
                 return {
                     title:'购物车',
-                    courses:[],
+                    courses:['web','web开发'],
                     course:'',
                     selectedCourse:'',
-                    totalCount:0
                 }
-            },
-            async created () {
-                //组件实例已将创建,由于为挂载，dom不存在，访问不到dom元素
-                const courses = await getCourses()
-                this.courses = courses;
-            },
-            mounted () {
             },
             methods: {
                 addCourser(){
@@ -80,33 +55,13 @@
                     //2.清空course
                     this.course='';
                 }
-            },
-            computed:{
-                total() {
-                    //计算属性有缓存性：如果值没有发生变化，则页面不会重新渲染
-                    return this.courses.length+'门';
-                }
-
-            },
-            //默认情况下watch初始化时不执行
-            // watch:{
-            //     courses(newValue,oldValue) {
-            //         this.totalCount = newValue.length + '门'
-            //     }
-            // },
-            watch: {
-                courses: {
-                    immediate: true,//立即执行
-                    // deep: true,
-                    handler(newValue, oldValue) {
-                        this.totalCount = newValue.length + '门' 
-                    }
-                }
-            },
+            }
         })
-        setTimeout(() => {
-            app.title = "wang";
-        }, 1000);
+
+        console.log("123");
+        console.log(app.$options.render);
+
+
     </script>
 </body>
 </html>
