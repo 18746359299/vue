@@ -9,31 +9,42 @@
         .active{
             background-color: antiquewhite;
         }
+        .message-box {
+            padding: 10px 20px;
+            background: #4fc08d;
+            border: 1px solid #42b983;  
+        }
+        .message-box-close { 
+            float: right;  
+        } 
     </style>
 </head>
 <body>
     <!-- 宿主文件 -->
     <div id="app">
+        <!-- 弹窗组件 -->
+        <message :show.sync="show">
+            <!-- 命名为title的插槽的内容 -->
+            <template v-slot:title="slotProps">
+                <strong>{{slotProps.title}}</strong>
+            </template>
+            <!-- 默认插槽 -->
+            <template v-slot:default>
+                新增课程成功!
+            </template>
+        </message>
         <h2 :title="title">
             {{title}}
         </h2>
-        <!-- 用户输入 -->
-        <p>
-            <input v-model="course" type="text" v-on:keydown.enter="addCourser"/>
-            <button @click="addCourser">新增</button>
+        <!-- 新增课程 -->
+        <course-add v-model="course" @add-course="addCourse"></course-add>
+        <!-- <course-add :value="course" @input="course=$event" @add-course="addCourse"></course-add> -->
+        <!-- 批量更新价格 -->
+        <p><input type="text" v-model.number="price">
+            <button @click="batchUpdate">批量更新价格</button>
         </p>
-        <!-- 条件渲染 -->
-        <p v-if="courses.length == 0">没有任何课程信息</p>
-        <!-- 列表渲染     -->
-        <!-- <div v-for="c in courses" :key="c" :class="{active: selectedCourse === c}" @click="selectedCourse = c">
-            <div>{{ c }}</div>
-        </div> -->
-        <!-- style -->
-        <div class="couse-list" v-else>
-            <div v-for="c in courses" :key="c" :style="{backgroundColor: (selectedCourse === c ?'#ddd':'transparent')}" @click="selectedCourse = c">
-                <div>{{ c }}</div>
-            </div>
-        </div>
+        <!-- 列表组件 -->
+        <course-list :courses="courses"></course-list>
         <!-- 商品总数 -->
         <p>
             <!-- 表达式 -->
@@ -46,11 +57,78 @@
     </div>
     <script src="vue.js"></script>
     <script>
+        //弹窗组建
+        Vue.component('message',{
+            props:['show'],//父组件传递
+            template:`
+                <div class="message-box" v-if="show">
+                    <!-- 具名插槽 -->
+                    <slot name="title" titlt="来自message的标题 ">默认标题</slot>
+                    <!-- 通过slot获取传入的内容 -->
+                    <slot></slot>
+                    <span class="message-box-close" @click="$emit('update:show',false)">*</span>
+                </div> 
+            `
+        })
+        //课程列表组件
+        Vue.component('course-list',{
+            data() {
+                return {
+                    selectedCourse:''
+                }
+            },
+            props:{
+                courses:{
+                    type:Array,
+                    default:[]
+                }
+            },
+            template: `
+                <div>
+                    <!-- 条件渲染 -->
+                    <p v-if="courses.length == 0">没有任何课程信息</p>
+                    <!-- 列表渲染     -->
+                    <!-- <div v-for="c in courses" :key="c" :class="{active: selectedCourse === c}" @click="selectedCourse = c">
+                        <div>{{ c }}</div>
+                    </div> -->
+                    <!-- style -->
+                    <div class="couse-list" v-else>
+                        <div v-for="c in courses" :key="c.name" :style="{backgroundColor: (selectedCourse === c ?'#ddd':'transparent')}" @click="selectedCourse = c">
+                            <div>{{ c.name }} - ￥{{c.price}}</div>
+                        </div>
+                    </div>
+                </div>
+            `
+        })
+        //课程新增组件
+        Vue.component('course-add',{
+            props:['value'],
+            template:`
+                <div>
+                    <!-- 用户输入 -->
+                        <p>
+                            <input :value="value" 
+                            @input="onInput"
+                            type="text" v-on:keydown.enter="addCourse"/>
+                            <button @click="addCourse">新增</button>
+                        </p>
+                </div>
+            `,
+            methods:{
+                addCourse(){
+                    //派发事件通知父组件新增课程
+                    this.$emit('add-course')
+                },
+                onInput(e){
+                    this.$emit('input',e.target.value);
+                }
+            }
+        })
         //模拟异步数据的调用
         function getCourses(){
             return new Promise(resolve => {
                 setTimeout(() => {
-                    resolve(['web','web开发'])
+                    resolve([{name:'web'},{name:'web开发'}])
                 }, 200);
             })
         }
@@ -61,24 +139,37 @@
                 return {
                     title:'购物车',
                     courses:[],
-                    course:'',
-                    selectedCourse:'',
-                    totalCount:0
+                    totalCount:0,
+                    course: '',
+                    show:false,
+                    foo:{foo:'foo',bar:'bar'},
+                    price:0,
                 }
             },
             async created () {
                 //组件实例已将创建,由于为挂载，dom不存在，访问不到dom元素
                 const courses = await getCourses()
                 this.courses = courses;
+                //批量更显商品的价格
+                this.batchUpdate()
             },
             mounted () {
             },
             methods: {
-                addCourser(){
+                addCourse(){
                     //1.添加course到数组
-                    this.courses.push(this.course);
-                    //2.清空course
-                    this.course='';
+                    this.courses.push(this.course)
+                    this.course = ''
+
+                    //显示提示信息
+                    this.show = true;
+                },
+                batchUpdate() {
+                    this.courses.forEach(c => {
+                        // c.price = this.price
+                        // Vue.set(c,'price',this.price)
+                        this.$set(c,'price',this.price)
+                    });
                 }
             },
             computed:{
