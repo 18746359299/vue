@@ -24,6 +24,8 @@
             float: right;  
         } 
     </style>
+    <!-- 引入动画库 -->
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@3.5.1" rel="stylesheet" type="text/css">
 </head>
 <body>
     <!-- 宿主文件 -->
@@ -44,7 +46,7 @@
         <message  ref="msgWorning" class="worning">
             <!-- 命名为title的插槽的内容 -->
             <template>
-                <strong v-slot:title>警告</strong>
+                <strong>警告</strong>
             </template>
             <!-- 默认插槽 -->
             <template v-slot:default>
@@ -90,13 +92,17 @@
                 }
             },
             template:`
-                <div class="message-box" v-if="show">
+            <transition enter-active-class="animated bounceIn"
+            leave-active-class="animated bounceOut"
+            >
+                <div class="fade-enter fade-enter-active message-box" v-if="show">
                     <!-- 具名插槽 -->
                     <slot name="title" titlt="来自message的标题 ">默认标题</slot>
                     <!-- 通过slot获取传入的内容 -->
                     <slot></slot>
                     <span class="message-box-close" @click="toggle">*</span>
-                </div> 
+                </div>
+            </transition>
             `,
             mounted(){
                 this.$bus.$on('message-close',() => {
@@ -109,10 +115,6 @@
                     this.show = !this.show;
                 }
             },
-        })
-        //过滤器
-        Vue.filter('currenty',function(value){
-            return value;
         })
         //课程列表组件
         Vue.component('course-list',{
@@ -138,16 +140,11 @@
                     <!-- style -->
                     <div class="couse-list" v-else>
                         <div v-for="c in courses" :key="c.name" :style="{backgroundColor: (selectedCourse === c ?'#ddd':'transparent')}" @click="selectedCourse = c">
-                            <div>{{ c.name }} - {{c.price | currency('$')}}</div>
+                            <div>{{ c.name }} - ￥{{c.price}}</div>
                         </div>
                     </div>
                 </div>
-            `,
-            filters:{
-                currency(value,symbol = '￥'){
-                    return symbol + value
-                }
-            }
+            `
         })
         //课程新增组件
         Vue.component('course-add',{
